@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    build: ./infrastructure/php-fpm
+    container_name: 'r-scraper-php-fpm'
+    volumes:
+      - ./:/var/www/html
+    links:
+      - postgres
+      - rabbitmq
+
+  postgres:
+    image: postgres:alpine
+    container_name: 'r-scraper-postgres'
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - '${DB_PORT}:${DB_INTERNAL_PORT}'
+    volumes:
+      - ./storage/logs/postgres:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.9.22-management-alpine
+    container_name: 'r-scraper-rabbitmq'
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD}
+    ports:
+      - '${RMQ_CLIENT_PORT}:${RMQ_CLIENT_INTERNAL_PORT}'
+      - '${RMQ_SERVER_PORT}:${RMQ_SERVER_INTERNAL_PORT}'
+    volumes:
+      - ./storage/rabbitmq-logs/data/:/var/lib/rabbitmq/mnesia
+      # - ./storage/rabbitmq-logs/log/:/var/log/rabbitmq
+
+  supervisor:
+    build: ./infrastructure/supervisor
+    container_name: 'r-scraper-supervisor'
+    volumes:
+      - ./:/var/www/html
+      - ./infrastructure/supervisor/config:/etc/supervisor
+      - ./storage/logs/supervisor:/var/log/supervisor
+    links: 
+      - php-fpm
+      - rabbitmq

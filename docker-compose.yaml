@@ -28,8 +28,8 @@ services:
       - RABBITMQ_DEFAULT_USER=${RMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD}
     ports:
+      - '${RMQ_API_CLIENT_PORT}:${RMQ_API_CLIENT_INTERNAL_PORT}'
       - '${RMQ_CLIENT_PORT}:${RMQ_CLIENT_INTERNAL_PORT}'
-      - '${RMQ_SERVER_PORT}:${RMQ_SERVER_INTERNAL_PORT}'
     volumes:
       - ./storage/rabbitmq-logs/data/:/var/lib/rabbitmq/mnesia
       # - ./storage/rabbitmq-logs/log/:/var/log/rabbitmq
